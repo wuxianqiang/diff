@@ -1,9 +1,11 @@
 import $ from 'jquery';
 import {createUnit} from './unit'
+import {Component} from './Component'
 
 const React = {
   render,
-  reactid: 0
+  reactid: 0,
+  Component
 }
 
 function render (el, container) {

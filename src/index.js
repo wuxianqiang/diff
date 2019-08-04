@@ -11,5 +11,32 @@ createElement('li', {}, 'a'),
 createElement('li', {}, 'b')
 )
 
+class Counter extends React.Component {
+  constructor (props) {
+    super(props);
+    this.state = {number: 0}
+  }
+  //WARNING! To be deprecated in React v17. Use componentDidMount instead.
+  componentWillMount() {
+    console.log('组件将要挂载')
+  }
+  componentDidMount() {
+    console.log('组件挂载完成')
+  }
+  increment = () => {
+    this.setState({
+      number: this.state.number + 1
+    })
+  }
+  render() {
+    return (
+      createElement('div', {id: 'counter'},
+        createElement('p', {}, this.state.number),
+        createElement('button', {onClick: this.increment}, '+')
+      )
+    );
+  }
+}
 
-React.render(el, document.getElementById('root'));
+// {type: Counter, props: {name: '计数器'}}
+React.render(createElement(Counter, {name: '计数器'}), document.getElementById('root'));

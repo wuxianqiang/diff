@@ -17,6 +17,20 @@ class TextUnit extends Unit {
   }
 }
 
+class compositeUnit extends Unit {
+  getMarkUp(reactid) {
+    this._reactid = reactid;
+    // {type: Counter, props: {name: '计数器'}}
+    let {type: Component, props} = this._currentElement;
+    // 实例化组件
+    let componentInstance = new Component(props);
+    // 调用render
+    let renderedElement = componentInstance.render();
+    // reander方法里面返回的就是虚拟DOM，交给创建单元
+    let renderedUnit = createUnit(renderedElement)
+    return renderedUnit.getMarkUp(reactid)
+  }
+}
 
 
 class NativeUnit extends Unit {
@@ -69,6 +83,10 @@ function createUnit(el) {
   isType = typeof el.type;
   if (el instanceof Element && isType === 'string') {
     return new NativeUnit(el)
+  }
+  // 类组件 Counter是个类， {type: Counter, props: {name: '计数器'}}
+  if (el instanceof Element && isType === 'function') {
+    return new compositeUnit(el)
   }
 }
 
