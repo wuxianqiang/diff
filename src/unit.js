@@ -1,5 +1,7 @@
 import { Element } from './element'
-import $ from 'jquery'
+import $ from 'jquery';
+let diffQueue = []; // 差异队列
+let updateDepth = 0; // 更新级别
 
 class Unit {
   constructor(el) {
@@ -16,6 +18,7 @@ class TextUnit extends Unit {
     return `<span data-reactid="${reactid}">${this._currentElement}</span>`
   }
   update(nextElement) {
+    console.log('03')
     // 修改当前元素的指向
     if (this._currentElement !== nextElement) {
       this._currentElement = nextElement
@@ -102,6 +105,82 @@ function shouldDeepCompare (oldElement, newElement) {
 }
 
 class NativeUnit extends Unit {
+  update (nextElement) {
+    console.log(nextElement, 'o3')
+    let oldProps = this._currentElement.props;
+    let newProps = nextElement.props;
+    // 更新我们的属性
+    this.updateDOMProperties(oldProps, newProps);
+    this.updateDOMChildren(nextElement.props.children)
+  }
+  // 把新的react元素和老的react进行对比
+  updateDOMChildren (newChildrenElements) {
+    this.diff(diffQueue, newChildrenElements);
+  }
+  diff (diffQueue, newChildrenElements) {
+    let oldChildrenUnitMap = this.getOldChildrenMap(this._renderedChildrenUnits);
+    let newChildren = this.getNewChildren(oldChildrenUnitMap, newChildrenElements);
+  }
+  getNewChildren (oldChildrenUnitMap, newChildrenElements) {
+    let newChildren = [];
+    newChildrenElements.forEach((newElement, index) => {
+      let newKey = (newElement &&
+        newElement._currentElement &&
+        newElement._currentElement.props &&
+        newElement._currentElement.props.key) || index.toString();
+      let oldUnit = oldChildrenUnitMap[newKey]; // 老unit
+      let oldElement = oldUnit && oldUnit._currentElement; // 老元素
+      if (shouldDeepCompare(oldElement, newElement)) {
+        // 递归了
+        console.log('ok')
+        oldUnit.update(newElement)
+        newChildren.push(oldUnit)
+      } else {
+        // 构建新的
+        let nextUnit = createUnit(newElement);
+        newChildren.push(nextUnit)
+      }
+    })
+    return newChildren
+  }
+  getOldChildrenMap (childrenUnits =[]) {
+    let map = {};
+    for(let i = 0; i < childrenUnits.length; i++) {
+      let unit = childrenUnits[i];
+      let key = (childrenUnits[i] &&
+      childrenUnits[i]._currentElement &&
+      childrenUnits[i]._currentElement.props &&
+      childrenUnits[i]._currentElement.props.key) || i.toString();
+      map[key] = unit
+    }
+    return map;
+  }
+  updateDOMProperties (oldProps, newProps) {
+    let propName;
+    for (propName in oldProps) {
+      // 删除不存在的属性
+      if (!newProps.hasOwnProperty(propName)) {
+        $(`[data-reactid="${this._reactid}"]`).removeAttr(propName)
+      }
+      // 取消事件绑定
+      if (/^on[A-Z]/.test(propName)) {
+        $(document).undelegate(`.${this._reactid}`);
+      }
+    }
+    for (propName in newProps) {
+      if (propName === 'children') {
+        // 暂时不处理
+        continue;
+      }else if (/^on[A-Z]/.test(propName)) {
+        let eventName = propName.slice(2).toLowerCase()
+        $(document).delegate(`[data-reactid="${this._reactid}"]`, `${eventName}.${this._reactid}`, newProps[propName])
+      } else if (propName === 'style') {
+        // console.log('处理样式')
+      } else {
+        $(`[data-reactid="${this._reactid}"]`).prop(propName, newProps[propName])
+      }
+    }
+  }
   getMarkUp(reactid) {
     this._reactid = reactid;
     // 虚拟DOM变成真实DOM再添加到页面上
@@ -110,6 +189,7 @@ class NativeUnit extends Unit {
     let tagStart = `<${type} data-reactid="${reactid}"`;
     let tagEnd = `</${type}>`;
     let childString = '';
+    this._renderedChildrenUnits = []
     for (let propName in props) {
       let value = props[propName]
       if (/^on[A-Z]/.test(propName)) {
@@ -131,6 +211,9 @@ class NativeUnit extends Unit {
         value.forEach((child, index) => {
           // 注意：这里重新调用了getMarkUp，递归获取的操作
           let childUnit = createUnit(child)
+          // 将每个单元保存起来
+          // 在diff中使用到了
+          this._renderedChildrenUnits.push(childUnit)
           let childMarkUp = childUnit.getMarkUp(`${reactid}.${index}`)
           childString += childMarkUp
         })

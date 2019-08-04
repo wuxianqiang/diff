@@ -22,9 +22,9 @@ class Counter extends React.Component {
   }
   componentDidMount() {
     console.log('组件挂载完成')
-    setTimeout(() => {
-      this.increment()
-    }, 2000);
+    // setTimeout(() => {
+    //   this.increment()
+    // }, 2000);
   }
   shouldComponentUpdate(nextProps, nextState) {
     return true
@@ -39,11 +39,11 @@ class Counter extends React.Component {
   }
   render() {
     return (
-      // createElement('div', {id: 'counter'},
-      //   createElement('p', {}, this.state.number),
-      //   createElement('button', {onClick: this.increment}, '+')
-      // )
-      this.state.number
+      createElement('div', {id: 'counter'},
+        createElement('p', {}, this.state.number),
+        createElement('button', {onClick: this.increment}, '+')
+      )
+      // this.state.number
     );
   }
 }
