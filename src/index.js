@@ -11,40 +11,72 @@ createElement('li', {}, 'a'),
 createElement('li', {}, 'b')
 )
 
+// class Counter extends React.Component {
+//   constructor (props) {
+//     super(props);
+//     this.state = {number: 0}
+//   }
+//   //WARNING! To be deprecated in React v17. Use componentDidMount instead.
+//   componentWillMount() {
+//     console.log('组件将要挂载')
+//   }
+//   componentDidMount() {
+//     console.log('组件挂载完成')
+//     // setTimeout(() => {
+//     //   this.increment()
+//     // }, 2000);
+//   }
+//   shouldComponentUpdate(nextProps, nextState) {
+//     return true
+//   }
+//   componentDidUpdate(prevProps, prevState) {
+//     console.log('组件更新')
+//   }
+//   increment = () => {
+//     this.setState({
+//       number: this.state.number + 1
+//     })
+//   }
+//   render() {
+//     return (
+//       createElement('div', {id: 'counter'},
+//         createElement('p', {}, this.state.number),
+//         createElement('button', {onClick: this.increment}, '+')
+//       )
+//       // this.state.number
+//     );
+//   }
+// }
+
 class Counter extends React.Component {
-  constructor (props) {
-    super(props);
-    this.state = {number: 0}
-  }
-  //WARNING! To be deprecated in React v17. Use componentDidMount instead.
-  componentWillMount() {
-    console.log('组件将要挂载')
+  constructor(props) {
+    super();
+    this.props = props;
+    this.state = {
+      odd: true
+    }
   }
   componentDidMount() {
-    console.log('组件挂载完成')
-    // setTimeout(() => {
-    //   this.increment()
-    // }, 2000);
-  }
-  shouldComponentUpdate(nextProps, nextState) {
-    return true
-  }
-  componentDidUpdate(prevProps, prevState) {
-    console.log('组件更新')
-  }
-  increment = () => {
-    this.setState({
-      number: this.state.number + 1
-    })
+    setTimeout(() => {
+      this.setState({
+        odd: false
+      })
+    }, 1000);
   }
   render() {
-    return (
-      createElement('div', {id: 'counter'},
-        createElement('p', {}, this.state.number),
-        createElement('button', {onClick: this.increment}, '+')
+    if (this.state.odd) {
+      return createElement('ul', {}, 
+        createElement('li', {key: 'a'}, 'a'),
+        createElement('li', {key: 'b'}, 'b'),
+        createElement('li', {key: 'c'}, 'c')
       )
-      // this.state.number
-    );
+    } else {
+      return createElement('ul', {}, 
+        createElement('li', {key: 'b'}, 'b'),
+        createElement('li', {key: 'c'}, 'c'),
+        createElement('li', {key: 'e'}, 'e')
+      )
+    }
   }
 }
 
