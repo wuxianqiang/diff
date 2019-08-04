@@ -2,6 +2,12 @@ class Component {
   constructor (props) {
     this.props = props
   }
+  setState(partialState) {
+    // 注意这行代码
+    // this._componentInstance._currentUnit = this;
+    // 第一个参数是新的元素，第二个参数是新的状态
+    this._currentUnit.update(null, partialState)
+  }
 }
 
 export {
